@@ -17,7 +17,7 @@ const Bags = () => {
         "https://stellara-server-1.onrender.com/api/products/category/bags"
       );
       setProducts(res?.data || []);
-      console.log(res);
+      // console.log(res);
     } catch (error) {
       console.error(error);
     } finally {

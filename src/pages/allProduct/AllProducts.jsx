@@ -19,7 +19,7 @@ const AllProducts = () => {
         `https://stellara-server-1.onrender.com/api/products`
       );
       setProducts(res?.data || []);
-      console.log(res);
+      // console.log(res);
     } catch (error) {
       console.log(error);
     } finally {

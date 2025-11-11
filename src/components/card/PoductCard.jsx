@@ -25,7 +25,7 @@ ${size ? `*Size:* ${size}` : ""}
     `;
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/2347063062524?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/2347068417703?text=${encodedMessage}`;
     window.open(whatsappUrl, "_blank");
   };
 

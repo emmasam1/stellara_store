@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import ProductCard from "../../components/card/PoductCard";
@@ -8,10 +8,7 @@ import Loader from "../../components/loader/Loader";
 
 const Bags = () => {
   const [products, setProducts] = useState([]);
-  const [visibleCount, setVisibleCount] = useState(8);
   const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const loaderRef = useRef(null);
 
   const getAppProducts = async () => {
     setLoading(true);
@@ -20,6 +17,7 @@ const Bags = () => {
         "https://stellara-server-1.onrender.com/api/products/category/bags"
       );
       setProducts(res?.data || []);
+      console.log(res)
     } catch (error) {
       console.error(error);
     } finally {
@@ -27,35 +25,13 @@ const Bags = () => {
     }
   };
 
-  // Lazy load more items when bottom of page is visible
-  const handleObserver = useCallback((entries) => {
-    const target = entries[0];
-    if (target.isIntersecting) {
-      setLoadingMore(true);
-      setTimeout(() => {
-        setVisibleCount((prev) => prev + 8);
-        setLoadingMore(false);
-      }, 1000);
-    }
-  }, []);
-
   useEffect(() => {
     getAppProducts();
   }, []);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(handleObserver, {
-      root: null,
-      rootMargin: "100px",
-      threshold: 0,
-    });
-    if (loaderRef.current) observer.observe(loaderRef.current);
-    return () => observer.disconnect();
-  }, [handleObserver]);
-
-  // Split products: first grid (top) and second grid (after hero)
+  // Split products into two grids
   const firstGridProducts = products.slice(0, 8);
-  const secondGridProducts = products.slice(8, visibleCount);
+  const secondGridProducts = products.length > 8 ? products.slice(8) : [];
 
   return (
     <div className="bg-[#202020] text-white">
@@ -168,38 +144,30 @@ const Bags = () => {
           <div className="flex justify-center items-center py-20">
             <Loader />
           </div>
+        ) : secondGridProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {secondGridProducts.map((item) => (
+              <motion.div
+                key={item._id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                viewport={{ once: true }}
+                whileHover={{ scale: 1.03 }}
+                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
+              >
+                <ProductCard {...item} />
+              </motion.div>
+            ))}
+          </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {secondGridProducts.map((item) => (
-                <motion.div
-                  key={item._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  viewport={{ once: true }}
-                  whileHover={{ scale: 1.03 }}
-                  className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
-                >
-                  <ProductCard {...item} />
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Lazy Loader for second grid */}
-            {visibleCount < products.length && (
-              <div ref={loaderRef} className="flex justify-center py-10">
-                {loadingMore && <Loader />}
-              </div>
-            )}
-          </>
+          <p className="text-center text-gray-400 py-10">
+            No more products to show.
+          </p>
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="bg-[#1a1a1a] text-gray-400 py-8 mt-12 text-center">
-        &copy; {new Date().getFullYear()} Stellara. All rights reserved.
-      </footer>
+    
     </div>
   );
 };

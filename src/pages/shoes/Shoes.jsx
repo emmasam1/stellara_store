@@ -1,0 +1,160 @@
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import axios from "axios";
+import shoe1 from "../../assets/shoe1.jpg"; // you can replace with a shoe-themed image
+import shoe2 from "../../assets/shoe2.jpg"; // replace with another shoe banner
+import ProductCard from "../../components/card/PoductCard";
+import Loader from "../../components/loader/Loader";
+
+const Shoes = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const getAppProducts = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        "https://stellara-server-1.onrender.com/api/products/category/shoes"
+      );
+      setProducts(res?.data || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAppProducts();
+  }, []);
+
+  // Split products into two grids
+  const firstGridProducts = products.slice(0, 8);
+  const secondGridProducts = products.length > 8 ? products.slice(8) : [];
+
+  return (
+    <div className="bg-[#202020] text-white">
+      {/* Hero Section */}
+      <div
+        className="relative h-[600px] flex items-center justify-center bg-cover bg-center overflow-hidden"
+        style={{ backgroundImage: `url(${shoe1})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 to-black/30"></div>
+        <div className="relative z-10 text-center px-6">
+          <motion.h1
+            className="text-4xl md:text-5xl font-extrabold text-[#CDA434] drop-shadow-lg"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            Step into Style & Comfort
+          </motion.h1>
+          <motion.p
+            className="mt-4 text-gray-400 text-lg leading-relaxed max-w-xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            Discover high-quality shoes crafted for elegance, durability, and everyday confidence.
+          </motion.p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="mt-6 px-8 py-3 bg-gradient-to-r from-[#CDA434] to-yellow-400 text-black font-semibold rounded-lg shadow-lg hover:from-yellow-400 hover:to-[#CDA434] transition"
+          >
+            Shop Now
+          </motion.button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto p-6">
+        {/* First Product Grid */}
+        <h2 className="text-2xl font-semibold text-[#CDA434] mb-6">
+          Featured Shoes
+        </h2>
+
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {firstGridProducts.map((item) => (
+              <motion.div
+                key={item._id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                viewport={{ once: true }}
+                whileHover={{ scale: 1.03 }}
+                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
+              >
+                <ProductCard {...item} />
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Mid Banner Section */}
+        <div
+          className="relative h-[500px] flex items-center justify-center bg-cover bg-center overflow-hidden my-12 rounded-xl"
+          style={{ backgroundImage: `url(${shoe2})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
+          <div className="relative z-10 text-center px-6 max-w-2xl">
+            <motion.h2
+              className="text-3xl md:text-4xl font-bold text-[#CDA434]"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              Walk Boldly, Live Confidently
+            </motion.h2>
+            <motion.p
+              className="mt-4 text-gray-300 text-lg leading-relaxed"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              From casual wear to luxury collections — explore shoes made for every moment.
+            </motion.p>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="mt-6 px-8 py-3 bg-gradient-to-r from-[#CDA434] to-yellow-400 text-black font-semibold rounded-lg shadow-lg hover:from-yellow-400 hover:to-[#CDA434] transition"
+            >
+              Explore Collection
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Second Product Grid */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {secondGridProducts.map((item) => (
+              <motion.div
+                key={item._id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                viewport={{ once: true }}
+                whileHover={{ scale: 1.03 }}
+                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
+              >
+                <ProductCard {...item} />
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Shoes;

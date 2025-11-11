@@ -13,7 +13,7 @@ const Navbar = ({ onCategorySelect, onSearch }) => {
     { name: "All", path: "/" },
     { name: "Perfumes", path: "/perfumes" },
     { name: "Bags", path: "/bags" },
-    // { name: "Beddings", path: "/beddings" },
+    { name: "Shoes", path: "/shoes" },
   ];
 
   const handleSearch = (e) => {

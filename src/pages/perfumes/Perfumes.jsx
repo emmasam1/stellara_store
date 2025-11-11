@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import bg_2 from "../../assets/bg_2.jpg";
@@ -8,10 +8,7 @@ import Loader from "../../components/loader/Loader";
 
 const Perfumes = () => {
   const [products, setProducts] = useState([]);
-  const [visibleCount, setVisibleCount] = useState(8); // initial products visible
   const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const loaderRef = useRef(null);
 
   const getAppProducts = async () => {
     setLoading(true);
@@ -27,35 +24,13 @@ const Perfumes = () => {
     }
   };
 
-  // Lazy load more products when bottom is visible
-  const handleObserver = useCallback((entries) => {
-    const target = entries[0];
-    if (target.isIntersecting && visibleCount < products.length) {
-      setLoadingMore(true);
-      setTimeout(() => {
-        setVisibleCount((prev) => prev + 8); // load 8 more
-        setLoadingMore(false);
-      }, 1000);
-    }
-  }, [products.length, visibleCount]);
-
   useEffect(() => {
     getAppProducts();
   }, []);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(handleObserver, {
-      root: null,
-      rootMargin: "100px",
-      threshold: 0,
-    });
-    if (loaderRef.current) observer.observe(loaderRef.current);
-    return () => observer.disconnect();
-  }, [handleObserver]);
-
-  // Split products into first and second grid
+  // Split products into two grids
   const firstGridProducts = products.slice(0, 8);
-  const secondGridProducts = products.slice(8, visibleCount);
+  const secondGridProducts = products.length > 8 ? products.slice(8) : [];
 
   return (
     <div className="bg-[#202020] text-white">
@@ -94,7 +69,10 @@ const Perfumes = () => {
 
       <div className="max-w-7xl mx-auto p-6">
         {/* First Product Grid */}
-        <h2 className="text-2xl font-semibold text-[#CDA434] mb-6">Featured Products</h2>
+        <h2 className="text-2xl font-semibold text-[#CDA434] mb-6">
+          Featured Products
+        </h2>
+
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <Loader />
@@ -153,26 +131,25 @@ const Perfumes = () => {
         </div>
 
         {/* Second Product Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {secondGridProducts.map((item) => (
-            <motion.div
-              key={item._id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              viewport={{ once: true }}
-              whileHover={{ scale: 1.03 }}
-              className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
-            >
-              <ProductCard {...item} />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Lazy Loader */}
-        {visibleCount < products.length && (
-          <div ref={loaderRef} className="flex justify-center py-10">
-            {loadingMore && <Loader />}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {secondGridProducts.map((item) => (
+              <motion.div
+                key={item._id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                viewport={{ once: true }}
+                whileHover={{ scale: 1.03 }}
+                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
+              >
+                <ProductCard {...item} />
+              </motion.div>
+            ))}
           </div>
         )}
       </div>

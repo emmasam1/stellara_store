@@ -12,20 +12,24 @@ const ProductCard = ({
   image,
   description,
   size,
+  socialMedia,
 }) => {
   const handleWhatsAppClick = () => {
-    // ✅ Make sure `image` is a full URL like https://yourdomain.com/image.jpg
+    if (!socialMedia?.whatsapp) return;
+
+    // ✅ Place image link FIRST for WhatsApp preview
     const message = `
+${image}
+
 *Product Name:* ${title}
 ${size ? `*Size:* ${size}` : ""}
-*Old Price:* ${oldPrice}
-*New Price:* ${newPrice}
-*Description:* ${description || "No description provided"}
-🖼️ *Product Image:* ${image}
-    `;
+${oldPrice ? `*Old Price:* ₦${oldPrice}` : ""}
+*New Price:* ₦${newPrice}
+${description ? `*Description:* ${description}` : ""}
+    `.trim();
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/2347068417703?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${socialMedia.whatsapp}?text=${encodedMessage}`;
     window.open(whatsappUrl, "_blank");
   };
 
@@ -42,39 +46,41 @@ ${size ? `*Size:* ${size}` : ""}
         <img
           alt={title}
           src={image}
-          className="h-60 object-cover rounded-t-md"
+          className="!h-60 w-full object-cover rounded-t-md"
         />
       }
     >
-      {/* Title */}
       <Meta title={<span className="text-white">{title}</span>} />
 
-      {/* Price Section */}
       <div className="flex justify-between items-center mt-3">
-        <span className="text-gray-400 line-through">{oldPrice}</span>
-        <span className="text-[#CDA434] font-bold">{newPrice}</span>
+        {oldPrice && (
+          <span className="text-gray-400 line-through">₦{oldPrice}</span>
+        )}
+        <span className="text-[#CDA434] font-bold">₦{newPrice}</span>
       </div>
 
-      {/* Social Icons */}
       <div className="flex space-x-4 mt-4">
-        {/* WhatsApp */}
-        <RiWhatsappFill
-          size={25}
-          className="text-green-500 hover:scale-110 cursor-pointer transition-transform"
-          onClick={handleWhatsAppClick}
-        />
-
-        {/* Instagram - you can add a share link later */}
-        <FaInstagram
-          size={25}
-          className="text-pink-500 hover:scale-110 cursor-pointer transition-transform"
-        />
-
-        {/* Facebook - you can add a share link later */}
-        <FaFacebook
-          size={25}
-          className="text-blue-600 hover:scale-110 cursor-pointer transition-transform"
-        />
+        {socialMedia?.whatsapp && (
+          <RiWhatsappFill
+            size={25}
+            className="text-green-500 hover:scale-110 cursor-pointer transition-transform"
+            onClick={handleWhatsAppClick}
+          />
+        )}
+        {socialMedia?.instagram && socialMedia.instagram !== "" && (
+          <FaInstagram
+            size={25}
+            className="text-pink-500 hover:scale-110 cursor-pointer transition-transform"
+            onClick={() => window.open(socialMedia.instagram, "_blank")}
+          />
+        )}
+        {socialMedia?.facebook && socialMedia.facebook !== "" && (
+          <FaFacebook
+            size={25}
+            className="text-blue-600 hover:scale-110 cursor-pointer transition-transform"
+            onClick={() => window.open(socialMedia.facebook, "_blank")}
+          />
+        )}
       </div>
     </Card>
   );

@@ -55,7 +55,8 @@ const Shoes = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Discover high-quality shoes crafted for elegance, durability, and everyday confidence.
+            Discover high-quality shoes crafted for elegance, durability, and
+            everyday confidence.
           </motion.p>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -89,7 +90,15 @@ const Shoes = () => {
                 whileHover={{ scale: 1.03 }}
                 className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
               >
-                <ProductCard {...item} />
+                <ProductCard
+                  title={item.name}
+                  oldPrice={item.oldPrice}
+                  newPrice={item.price}
+                  image={item.image}
+                  description={item.description}
+                  size={item.size}
+                  socialMedia={item.socialMedia}
+                />
               </motion.div>
             ))}
           </div>
@@ -118,7 +127,8 @@ const Shoes = () => {
               transition={{ delay: 0.3, duration: 0.8 }}
               viewport={{ once: true }}
             >
-              From casual wear to luxury collections — explore shoes made for every moment.
+              From casual wear to luxury collections — explore shoes made for
+              every moment.
             </motion.p>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -147,7 +157,15 @@ const Shoes = () => {
                 whileHover={{ scale: 1.03 }}
                 className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
               >
-                <ProductCard {...item} />
+                <ProductCard
+                  title={item.name}
+                  oldPrice={item.oldPrice}
+                  newPrice={item.price}
+                  image={item.image}
+                  description={item.description}
+                  size={item.size}
+                  socialMedia={item.socialMedia}
+                />
               </motion.div>
             ))}
           </div>

@@ -55,7 +55,8 @@ const Perfumes = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Discover premium scents, bags, and lifestyle essentials curated for elegance and confidence.
+            Discover premium scents, bags, and lifestyle essentials curated for
+            elegance and confidence.
           </motion.p>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -89,7 +90,15 @@ const Perfumes = () => {
                 whileHover={{ scale: 1.03 }}
                 className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
               >
-                <ProductCard {...item} />
+                <ProductCard
+                  title={item.name}
+                  oldPrice={item.oldPrice}
+                  newPrice={item.price}
+                  image={item.image}
+                  description={item.description}
+                  size={item.size}
+                  socialMedia={item.socialMedia}
+                />
               </motion.div>
             ))}
           </div>
@@ -118,7 +127,8 @@ const Perfumes = () => {
               transition={{ delay: 0.3, duration: 0.8 }}
               viewport={{ once: true }}
             >
-              Indulge your senses with timeless scents designed to inspire confidence and elegance.
+              Indulge your senses with timeless scents designed to inspire
+              confidence and elegance.
             </motion.p>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -147,7 +157,15 @@ const Perfumes = () => {
                 whileHover={{ scale: 1.03 }}
                 className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
               >
-                <ProductCard {...item} />
+                <ProductCard
+                  title={item.name}
+                  oldPrice={item.oldPrice}
+                  newPrice={item.price}
+                  image={item.image}
+                  description={item.description}
+                  size={item.size}
+                  socialMedia={item.socialMedia}
+                />
               </motion.div>
             ))}
           </div>

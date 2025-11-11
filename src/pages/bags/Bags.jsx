@@ -17,7 +17,7 @@ const Bags = () => {
         "https://stellara-server-1.onrender.com/api/products/category/bags"
       );
       setProducts(res?.data || []);
-      console.log(res)
+      console.log(res);
     } catch (error) {
       console.error(error);
     } finally {
@@ -30,8 +30,8 @@ const Bags = () => {
   }, []);
 
   // Split products into two grids
-  const firstGridProducts = products.slice(0, 8);
-  const secondGridProducts = products.length > 8 ? products.slice(8) : [];
+  const firstGridProducts = products?.slice(0, 8);
+  const secondGridProducts = products?.length > 8 ? products?.slice(8) : [];
 
   return (
     <div className="bg-[#202020] text-white">
@@ -81,7 +81,7 @@ const Bags = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {firstGridProducts.map((item) => (
+            {firstGridProducts?.map((item) => (
               <motion.div
                 key={item._id}
                 initial={{ opacity: 0, y: 20 }}
@@ -91,7 +91,15 @@ const Bags = () => {
                 whileHover={{ scale: 1.03 }}
                 className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
               >
-                <ProductCard {...item} />
+                <ProductCard
+                  title={item.name}
+                  oldPrice={item.oldPrice}
+                  newPrice={item.price}
+                  image={item.image}
+                  description={item.description}
+                  size={item.size}
+                  socialMedia={item.socialMedia}
+                />
               </motion.div>
             ))}
           </div>
@@ -100,7 +108,7 @@ const Bags = () => {
 
       {/* Second Hero Banner */}
       <div
-        className="relative h-[500px] flex items-center justify-center bg-cover bg-center overflow-hidden my-12 rounded-xl"
+        className="relative h-[500px] max-w-6xl mx-auto flex items-center justify-center bg-cover bg-center overflow-hidden my-12 rounded-xl"
         style={{ backgroundImage: `url(${bg_4})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/30"></div>
@@ -144,9 +152,9 @@ const Bags = () => {
           <div className="flex justify-center items-center py-20">
             <Loader />
           </div>
-        ) : secondGridProducts.length > 0 ? (
+        ) : secondGridProducts?.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {secondGridProducts.map((item) => (
+            {secondGridProducts?.map((item) => (
               <motion.div
                 key={item._id}
                 initial={{ opacity: 0, y: 20 }}
@@ -156,7 +164,15 @@ const Bags = () => {
                 whileHover={{ scale: 1.03 }}
                 className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
               >
-                <ProductCard {...item} />
+                <ProductCard
+                  title={item.name}
+                  oldPrice={item.oldPrice}
+                  newPrice={item.price}
+                  image={item.image}
+                  description={item.description}
+                  size={item.size}
+                  socialMedia={item.socialMedia}
+                />
               </motion.div>
             ))}
           </div>
@@ -166,8 +182,6 @@ const Bags = () => {
           </p>
         )}
       </div>
-
-    
     </div>
   );
 };

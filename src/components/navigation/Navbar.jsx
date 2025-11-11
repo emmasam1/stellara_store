@@ -9,14 +9,13 @@ const Navbar = ({ onCategorySelect, onSearch }) => {
   const [isOpen, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-   const navLinks = [
+  const navLinks = [
     { name: "All", path: "/" },
     { name: "Perfumes", path: "/perfumes" },
     { name: "Bags", path: "/bags" },
     { name: "Beddings", path: "/beddings" },
   ];
 
-  // handle search
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
@@ -29,7 +28,9 @@ const Navbar = ({ onCategorySelect, onSearch }) => {
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex items-center gap-2 cursor-pointer">
-          <img src={logo} alt="Logo" className="w-36 sm:w-40" />
+          <Link to="/">
+            <img src={logo} alt="Logo" className="w-36 sm:w-40" />
+          </Link>
         </div>
 
         {/* Desktop Menu */}
@@ -90,21 +91,25 @@ const Navbar = ({ onCategorySelect, onSearch }) => {
               exit={{ x: "100%" }}
               transition={{ type: "tween", duration: 0.3 }}
             >
-              <img src={logo} alt="Logo" className="w-36 mb-4" />
-              {navLinks.map((name) => (
-                <button
-                  key={name}
+              <Link to="/">
+                <img src={logo} alt="Logo" className="w-36 mb-4" />
+              </Link>
+
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.path}
                   onClick={() => {
-                    onCategorySelect(name.toLowerCase());
+                    onCategorySelect(link.name.toLowerCase());
                     setOpen(false);
                   }}
                   className="text-[#CDA434] text-lg font-medium hover:text-orange-200"
                 >
-                  {name}
-                </button>
+                  {link.name}
+                </Link>
               ))}
 
-              {/* Search inside mobile menu */}
+              {/* Mobile Search */}
               <div className="relative mt-4 bg-white rounded-full px-3 py-2 flex items-center">
                 <SearchOutlined className="text-[#CDA434]" />
                 <input

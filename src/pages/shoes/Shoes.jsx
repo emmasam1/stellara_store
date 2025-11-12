@@ -14,6 +14,8 @@ const Shoes = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [viewCounts, setViewCounts] = useState({});
 
+  const API_BASE_URL = "https://stellara-server-1.onrender.com";
+
   // Fetch shoes
   const getAppProducts = async () => {
     setLoading(true);
@@ -33,20 +35,37 @@ const Shoes = () => {
     getAppProducts();
 
     // Load view counts from localStorage
-    const storedViews = JSON.parse(localStorage.getItem("productViews") || "{}");
+    const storedViews = JSON.parse(
+      localStorage.getItem("productViews") || "{}"
+    );
     setViewCounts(storedViews);
   }, []);
 
   // Handle click to open modal
-  const handleProductClick = (product) => {
+  const handleProductClick = async (product) => {
     setSelectedProduct(product);
 
-    const storedViews = JSON.parse(localStorage.getItem("productViews") || "{}");
+    const viewed = JSON.parse(localStorage.getItem("viewedProducts") || "[]");
 
-    if (!storedViews[product._id]) {
-      storedViews[product._id] = (viewCounts[product._id] || 0) + 1;
-      localStorage.setItem("productViews", JSON.stringify(storedViews));
-      setViewCounts(storedViews);
+    if (!viewed.includes(product._id)) {
+      try {
+        const res = await axios.put(
+          `${API_BASE_URL}/api/products/${product._id}/view`
+        );
+        const updatedViews = res.data.views;
+
+        // Update state for immediate UI reflection
+        setViewCounts((prev) => ({
+          ...prev,
+          [product._id]: updatedViews,
+        }));
+
+        // Mark as viewed locally
+        viewed.push(product._id);
+        localStorage.setItem("viewedProducts", JSON.stringify(viewed));
+      } catch (err) {
+        console.error("Failed to increment view:", err);
+      }
     }
   };
 
@@ -188,7 +207,7 @@ const Shoes = () => {
                 {/* 👁️ View Count */}
                 <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 px-2 py-1 rounded-full text-xs">
                   <EyeOutlined />
-                  <span>{viewCounts[item._id] || 0}</span>
+                  <span>{viewCounts[item._id] || item.views || 0}</span>
                 </div>
               </motion.div>
             ))}

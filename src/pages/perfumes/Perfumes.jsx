@@ -14,6 +14,8 @@ const Perfumes = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [viewCounts, setViewCounts] = useState({});
 
+  const API_BASE_URL = "https://stellara-server-1.onrender.com";
+  
   // ✅ Fetch perfumes
   const getAppProducts = async () => {
     setLoading(true);
@@ -38,17 +40,27 @@ const Perfumes = () => {
   }, []);
 
   // ✅ Handle click to open modal
-  const handleProductClick = (product) => {
-    setSelectedProduct(product);
-
-    const storedViews = JSON.parse(localStorage.getItem("productViews") || "{}");
-
-    if (!storedViews[product._id]) {
-      storedViews[product._id] = (viewCounts[product._id] || 0) + 1;
-      localStorage.setItem("productViews", JSON.stringify(storedViews));
-      setViewCounts(storedViews);
-    }
-  };
+  const handleProductClick = async (product) => {
+     setSelectedProduct(product);
+ 
+     const viewed = JSON.parse(localStorage.getItem("viewedProducts") || "[]");
+ 
+     // 👁️ Increment view count in database only once per device
+     if (!viewed.includes(product._id)) {
+       try {
+         const res = await axios.put(`${API_BASE_URL}/api/products/${product._id}/view`);
+         const updatedProducts = products.map((p) =>
+           p._id === product._id ? { ...p, views: res.data.views } : p
+         );
+         setProducts(updatedProducts);
+ 
+         viewed.push(product._id);
+         localStorage.setItem("viewedProducts", JSON.stringify(viewed));
+       } catch (err) {
+         console.error("Failed to increment view:", err);
+       }
+     }
+   };
 
   const handleModalClose = () => setSelectedProduct(null);
 

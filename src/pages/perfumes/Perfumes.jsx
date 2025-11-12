@@ -79,7 +79,7 @@ const Perfumes = () => {
             <Loader />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {firstGridProducts.map((item) => (
               <motion.div
                 key={item._id}
@@ -146,7 +146,7 @@ const Perfumes = () => {
             <Loader />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {secondGridProducts.map((item) => (
               <motion.div
                 key={item._id}

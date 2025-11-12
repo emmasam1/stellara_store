@@ -6,7 +6,7 @@ import Loader from "../../components/loader/Loader";
 
 const AllProducts = () => {
   const [products, setProducts] = useState([]);
-  const [visibleCount, setVisibleCount] = useState(8); // 👈 initial products to show
+  const [visibleCount, setVisibleCount] = useState(8);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -18,8 +18,18 @@ const AllProducts = () => {
       const res = await axios.get(
         `https://stellara-server-1.onrender.com/api/products`
       );
-      setProducts(res?.data || []);
-      // console.log(res);
+
+      // ✅ Sort: newest first (based on createdAt or reverse fallback)
+      const sortedProducts = (res?.data || [])
+        .sort((a, b) => {
+          if (a.createdAt && b.createdAt) {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          }
+          return 0;
+        })
+        .reverse(); // remove `.reverse()` if your backend already sends newest last
+
+      setProducts(sortedProducts);
     } catch (error) {
       console.log(error);
     } finally {
@@ -31,18 +41,16 @@ const AllProducts = () => {
     getAppProducts();
   }, []);
 
-  // 👇 Function to load more items
   const loadMoreProducts = useCallback(() => {
     if (visibleCount < products.length) {
       setLoadingMore(true);
       setTimeout(() => {
-        setVisibleCount((prev) => prev + 8); // Load 8 more each time
+        setVisibleCount((prev) => prev + 8);
         setLoadingMore(false);
-      }, 800); // simulate delay
+      }, 800);
     }
   }, [products.length, visibleCount]);
 
-  // 👇 Observer triggers when user scrolls near the bottom
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -76,7 +84,8 @@ const AllProducts = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
-          Handpicked luxury perfumes and lifestyle essentials — crafted to make every moment unforgettable.
+          Handpicked luxury perfumes and lifestyle essentials — crafted to make
+          every moment unforgettable.
         </motion.p>
       </div>
 
@@ -88,7 +97,7 @@ const AllProducts = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {products.slice(0, visibleCount).map((item) => (
                 <motion.div
                   key={item._id}
@@ -112,7 +121,7 @@ const AllProducts = () => {
               ))}
             </div>
 
-            {/* Loader for infinite scroll */}
+            {/* Infinite Scroll Loader */}
             {visibleCount < products.length && (
               <div
                 ref={loaderRef}

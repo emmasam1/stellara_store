@@ -8,22 +8,23 @@ import shoe2 from "../../assets/shoe2.jpg";
 import ProductCard from "../../components/card/PoductCard";
 import Loader from "../../components/loader/Loader";
 
+const API_BASE_URL = "https://stellara-server-1.onrender.com";
+
 const Shoes = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [viewCounts, setViewCounts] = useState({});
-
-  const API_BASE_URL = "https://stellara-server-1.onrender.com";
 
   // Fetch shoes
   const getAppProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        "https://stellara-server-1.onrender.com/api/products/category/shoes"
-      );
-      setProducts(res?.data || []);
+      const res = await axios.get(`${API_BASE_URL}/api/products/category/shoes`);
+      const productsWithViews = (res?.data || []).map((item) => ({
+        ...item,
+        views: item.views || 0, // ensure views exist
+      }));
+      setProducts(productsWithViews);
     } catch (error) {
       console.error(error);
     } finally {
@@ -33,12 +34,6 @@ const Shoes = () => {
 
   useEffect(() => {
     getAppProducts();
-
-    // Load view counts from localStorage
-    const storedViews = JSON.parse(
-      localStorage.getItem("productViews") || "{}"
-    );
-    setViewCounts(storedViews);
   }, []);
 
   // Handle click to open modal
@@ -49,16 +44,15 @@ const Shoes = () => {
 
     if (!viewed.includes(product._id)) {
       try {
-        const res = await axios.put(
-          `${API_BASE_URL}/api/products/${product._id}/view`
-        );
+        const res = await axios.put(`${API_BASE_URL}/api/products/${product._id}/view`);
         const updatedViews = res.data.views;
 
-        // Update state for immediate UI reflection
-        setViewCounts((prev) => ({
-          ...prev,
-          [product._id]: updatedViews,
-        }));
+        // Update product views in state
+        setProducts((prev) =>
+          prev.map((p) =>
+            p._id === product._id ? { ...p, views: updatedViews } : p
+          )
+        );
 
         // Mark as viewed locally
         viewed.push(product._id);
@@ -71,7 +65,7 @@ const Shoes = () => {
 
   const handleModalClose = () => setSelectedProduct(null);
 
-  // Split products
+  // Split products into two grids
   const firstGridProducts = products.slice(0, 8);
   const secondGridProducts = products.length > 8 ? products.slice(8) : [];
 
@@ -98,8 +92,7 @@ const Shoes = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Discover high-quality shoes crafted for elegance, durability, and
-            everyday confidence.
+            Discover high-quality shoes crafted for elegance, durability, and everyday confidence.
           </motion.p>
         </div>
       </div>
@@ -140,7 +133,7 @@ const Shoes = () => {
                 {/* 👁️ View Count */}
                 <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 px-2 py-1 rounded-full text-xs">
                   <EyeOutlined />
-                  <span>{viewCounts[item._id] || 0}</span>
+                  <span>{item.views || 0}</span>
                 </div>
               </motion.div>
             ))}
@@ -170,8 +163,7 @@ const Shoes = () => {
               transition={{ delay: 0.3, duration: 0.8 }}
               viewport={{ once: true }}
             >
-              From casual wear to luxury collections — explore shoes made for
-              every moment.
+              From casual wear to luxury collections — explore shoes made for every moment.
             </motion.p>
           </div>
         </div>
@@ -207,7 +199,7 @@ const Shoes = () => {
                 {/* 👁️ View Count */}
                 <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 px-2 py-1 rounded-full text-xs">
                   <EyeOutlined />
-                  <span>{viewCounts[item._id] || item.views || 0}</span>
+                  <span>{item.views || 0}</span>
                 </div>
               </motion.div>
             ))}
@@ -257,14 +249,12 @@ const Shoes = () => {
               </div>
 
               {selectedProduct.size && (
-                <p className="text-sm text-gray-400">
-                  Size: {selectedProduct.size}
-                </p>
+                <p className="text-sm text-gray-400">Size: {selectedProduct.size}</p>
               )}
 
               <div className="flex justify-center items-center gap-2 mt-2 text-gray-400 text-sm">
                 <EyeOutlined />
-                <span>{viewCounts[selectedProduct._id] || 0} Views</span>
+                <span>{selectedProduct.views || 0} Views</span>
               </div>
             </div>
           </div>

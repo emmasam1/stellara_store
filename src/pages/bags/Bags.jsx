@@ -241,11 +241,11 @@ const Bags = () => {
 
               <div className="flex justify-center items-center gap-4 mt-4">
                 <p className="text-lg font-semibold text-white">
-                  ${selectedProduct.price}
+                  ₦{selectedProduct.price}
                 </p>
                 {selectedProduct.oldPrice && (
                   <p className="text-gray-500 line-through">
-                    ${selectedProduct.oldPrice}
+                    ₦{selectedProduct.oldPrice}
                   </p>
                 )}
               </div>

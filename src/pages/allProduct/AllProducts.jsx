@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import { Modal, Divider } from "antd";
+import { Modal, Divider, message } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
 import ProductCard from "../../components/card/PoductCard";
 import Loader from "../../components/loader/Loader";
+
+const API_BASE_URL = "https://stellara-server-1.onrender.com";
 
 const AllProducts = () => {
   const [products, setProducts] = useState([]);
@@ -12,29 +14,20 @@ const AllProducts = () => {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [viewCounts, setViewCounts] = useState({});
   const loaderRef = useRef(null);
 
-  // ✅ Fetch all products
+  // ✅ Fetch all products from backend
   const getAppProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `https://stellara-server-1.onrender.com/api/products`
-      );
-
+      const res = await axios.get(`${API_BASE_URL}/api/products`);
       const sortedProducts = (res?.data || [])
-        .sort((a, b) => {
-          if (a.createdAt && b.createdAt) {
-            return new Date(b.createdAt) - new Date(a.createdAt);
-          }
-          return 0;
-        })
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .reverse();
-
       setProducts(sortedProducts);
     } catch (error) {
       console.log(error);
+      message.error("Failed to fetch products");
     } finally {
       setLoading(false);
     }
@@ -42,13 +35,9 @@ const AllProducts = () => {
 
   useEffect(() => {
     getAppProducts();
-
-    // ✅ Load saved views from localStorage
-    const storedViews = JSON.parse(localStorage.getItem("productViews") || "{}");
-    setViewCounts(storedViews);
   }, []);
 
-  // ✅ Load more products on scroll
+  // ✅ Infinite scroll
   const loadMoreProducts = useCallback(() => {
     if (visibleCount < products.length) {
       setLoadingMore(true);
@@ -75,16 +64,25 @@ const AllProducts = () => {
   }, [loadMoreProducts, loadingMore]);
 
   // ✅ Handle product click
-  const handleProductClick = (product) => {
+  const handleProductClick = async (product) => {
     setSelectedProduct(product);
 
-    const storedViews = JSON.parse(localStorage.getItem("productViews") || "{}");
+    const viewed = JSON.parse(localStorage.getItem("viewedProducts") || "[]");
 
-    // if this product has not been viewed yet on this device
-    if (!storedViews[product._id]) {
-      storedViews[product._id] = (viewCounts[product._id] || 0) + 1;
-      localStorage.setItem("productViews", JSON.stringify(storedViews));
-      setViewCounts(storedViews);
+    // 👁️ Increment view count in database only once per device
+    if (!viewed.includes(product._id)) {
+      try {
+        const res = await axios.put(`${API_BASE_URL}/api/products/${product._id}/view`);
+        const updatedProducts = products.map((p) =>
+          p._id === product._id ? { ...p, views: res.data.views } : p
+        );
+        setProducts(updatedProducts);
+
+        viewed.push(product._id);
+        localStorage.setItem("viewedProducts", JSON.stringify(viewed));
+      } catch (err) {
+        console.error("Failed to increment view:", err);
+      }
     }
   };
 
@@ -146,7 +144,7 @@ const AllProducts = () => {
                   {/* 👁️ View Count */}
                   <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 px-2 py-1 rounded-full text-xs">
                     <EyeOutlined />
-                    <span>{viewCounts[item._id] || 0}</span>
+                    <span>{item.views || 0}</span>
                   </div>
                 </motion.div>
               ))}
@@ -154,10 +152,7 @@ const AllProducts = () => {
 
             {/* Infinite Scroll Loader */}
             {visibleCount < products.length && (
-              <div
-                ref={loaderRef}
-                className="flex justify-center items-center py-10"
-              >
+              <div ref={loaderRef} className="flex justify-center items-center py-10">
                 <Loader />
               </div>
             )}
@@ -176,6 +171,7 @@ const AllProducts = () => {
       >
         {selectedProduct && (
           <div className="bg-[#202020] text-white rounded-xl overflow-hidden">
+            {/* Image */}
             <div className="w-full h-80 flex justify-center items-center bg-[#1a1a1a]">
               <img
                 src={selectedProduct.image}
@@ -184,6 +180,7 @@ const AllProducts = () => {
               />
             </div>
 
+            {/* Content */}
             <div className="p-6 text-center space-y-3">
               <h2 className="text-2xl font-bold text-[#CDA434] uppercase tracking-wide">
                 {selectedProduct.name}
@@ -214,7 +211,7 @@ const AllProducts = () => {
 
               <div className="flex justify-center items-center gap-2 mt-2 text-gray-400 text-sm">
                 <EyeOutlined />
-                <span>{viewCounts[selectedProduct._id] || 0} Views</span>
+                <span>{selectedProduct.views || 0} Views</span>
               </div>
             </div>
           </div>

@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import shoe1 from "../../assets/shoe1.jpg"; // you can replace with a shoe-themed image
-import shoe2 from "../../assets/shoe2.jpg"; // replace with another shoe banner
+import { Modal, Divider } from "antd";
+import { EyeOutlined } from "@ant-design/icons";
+import shoe1 from "../../assets/shoe1.jpg";
+import shoe2 from "../../assets/shoe2.jpg";
 import ProductCard from "../../components/card/PoductCard";
 import Loader from "../../components/loader/Loader";
 
 const Shoes = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [viewCounts, setViewCounts] = useState({});
 
+  // Fetch shoes
   const getAppProducts = async () => {
     setLoading(true);
     try {
@@ -26,9 +31,28 @@ const Shoes = () => {
 
   useEffect(() => {
     getAppProducts();
+
+    // Load view counts from localStorage
+    const storedViews = JSON.parse(localStorage.getItem("productViews") || "{}");
+    setViewCounts(storedViews);
   }, []);
 
-  // Split products into two grids
+  // Handle click to open modal
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
+
+    const storedViews = JSON.parse(localStorage.getItem("productViews") || "{}");
+
+    if (!storedViews[product._id]) {
+      storedViews[product._id] = (viewCounts[product._id] || 0) + 1;
+      localStorage.setItem("productViews", JSON.stringify(storedViews));
+      setViewCounts(storedViews);
+    }
+  };
+
+  const handleModalClose = () => setSelectedProduct(null);
+
+  // Split products
   const firstGridProducts = products.slice(0, 8);
   const secondGridProducts = products.length > 8 ? products.slice(8) : [];
 
@@ -50,7 +74,7 @@ const Shoes = () => {
             Step into Style & Comfort
           </motion.h1>
           <motion.p
-            className="mt-4 text-gray-400 text-lg leading-relaxed max-w-xl mx-auto"
+            className="mt-4 text-gray-400 text-lg max-w-xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
@@ -58,13 +82,6 @@ const Shoes = () => {
             Discover high-quality shoes crafted for elegance, durability, and
             everyday confidence.
           </motion.p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="mt-6 px-8 py-3 bg-gradient-to-r from-[#CDA434] to-yellow-400 text-black font-semibold rounded-lg shadow-lg hover:from-yellow-400 hover:to-[#CDA434] transition"
-          >
-            Shop Now
-          </motion.button>
         </div>
       </div>
 
@@ -79,7 +96,7 @@ const Shoes = () => {
             <Loader />
           </div>
         ) : (
-         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {firstGridProducts.map((item) => (
               <motion.div
                 key={item._id}
@@ -88,7 +105,8 @@ const Shoes = () => {
                 transition={{ duration: 0.3 }}
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.03 }}
-                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
+                onClick={() => handleProductClick(item)}
+                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl cursor-pointer relative"
               >
                 <ProductCard
                   title={item.name}
@@ -99,6 +117,12 @@ const Shoes = () => {
                   size={item.size}
                   socialMedia={item.socialMedia}
                 />
+
+                {/* 👁️ View Count */}
+                <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 px-2 py-1 rounded-full text-xs">
+                  <EyeOutlined />
+                  <span>{viewCounts[item._id] || 0}</span>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -121,7 +145,7 @@ const Shoes = () => {
               Walk Boldly, Live Confidently
             </motion.h2>
             <motion.p
-              className="mt-4 text-gray-300 text-lg leading-relaxed"
+              className="mt-4 text-gray-300 text-lg"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.8 }}
@@ -130,13 +154,6 @@ const Shoes = () => {
               From casual wear to luxury collections — explore shoes made for
               every moment.
             </motion.p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="mt-6 px-8 py-3 bg-gradient-to-r from-[#CDA434] to-yellow-400 text-black font-semibold rounded-lg shadow-lg hover:from-yellow-400 hover:to-[#CDA434] transition"
-            >
-              Explore Collection
-            </motion.button>
           </div>
         </div>
 
@@ -155,7 +172,8 @@ const Shoes = () => {
                 transition={{ duration: 0.3 }}
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.03 }}
-                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
+                onClick={() => handleProductClick(item)}
+                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl cursor-pointer relative"
               >
                 <ProductCard
                   title={item.name}
@@ -166,11 +184,86 @@ const Shoes = () => {
                   size={item.size}
                   socialMedia={item.socialMedia}
                 />
+
+                {/* 👁️ View Count */}
+                <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 px-2 py-1 rounded-full text-xs">
+                  <EyeOutlined />
+                  <span>{viewCounts[item._id] || 0}</span>
+                </div>
               </motion.div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Product Modal */}
+      <Modal
+        open={!!selectedProduct}
+        onCancel={handleModalClose}
+        footer={null}
+        centered
+        width={750}
+        className="custom-dark-modal"
+      >
+        {selectedProduct && (
+          <div className="bg-[#202020] text-white rounded-xl overflow-hidden">
+            <div className="w-full h-80 flex justify-center items-center bg-[#1a1a1a]">
+              <img
+                src={selectedProduct.image}
+                alt={selectedProduct.name}
+                className="max-h-72 object-contain rounded-lg"
+              />
+            </div>
+
+            <div className="p-6 text-center space-y-3">
+              <h2 className="text-2xl font-bold text-[#CDA434] uppercase tracking-wide">
+                {selectedProduct.name}
+              </h2>
+
+              <Divider className="border-gray-700" />
+
+              <p className="text-gray-300 leading-relaxed">
+                {selectedProduct.description || "No description available."}
+              </p>
+
+              <div className="flex justify-center items-center gap-4 mt-4">
+                <p className="text-lg font-semibold text-white">
+                  ${selectedProduct.price}
+                </p>
+                {selectedProduct.oldPrice && (
+                  <p className="text-gray-500 line-through">
+                    ${selectedProduct.oldPrice}
+                  </p>
+                )}
+              </div>
+
+              {selectedProduct.size && (
+                <p className="text-sm text-gray-400">
+                  Size: {selectedProduct.size}
+                </p>
+              )}
+
+              <div className="flex justify-center items-center gap-2 mt-2 text-gray-400 text-sm">
+                <EyeOutlined />
+                <span>{viewCounts[selectedProduct._id] || 0} Views</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Custom Modal Styles */}
+      <style jsx global>{`
+        .custom-dark-modal .ant-modal-content {
+          background-color: #202020 !important;
+          color: white !important;
+          border-radius: 1rem;
+          overflow: hidden;
+        }
+        .custom-dark-modal .ant-modal-close {
+          color: #fff !important;
+        }
+      `}</style>
     </div>
   );
 };

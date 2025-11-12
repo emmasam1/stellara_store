@@ -1,25 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { Modal, Divider, message } from "antd";
+import { EyeOutlined } from "@ant-design/icons";
 import ProductCard from "../../components/card/PoductCard";
+import Loader from "../../components/loader/Loader";
 import bg_5 from "../../assets/bg_5.jpg";
 import bg_4 from "../../assets/bg_4.jpg";
-import Loader from "../../components/loader/Loader";
+
+const API_BASE_URL = "https://stellara-server-1.onrender.com";
 
 const Bags = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
+  // ✅ Fetch all bag products
   const getAppProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        "https://stellara-server-1.onrender.com/api/products/category/bags"
-      );
+      const res = await axios.get(`${API_BASE_URL}/api/products/category/bags`);
       setProducts(res?.data || []);
-      // console.log(res);
     } catch (error) {
       console.error(error);
+      message.error("Failed to fetch bag products");
     } finally {
       setLoading(false);
     }
@@ -29,7 +33,31 @@ const Bags = () => {
     getAppProducts();
   }, []);
 
-  // Split products into two grids
+  // ✅ Handle product click (open modal + update view count once)
+  const handleProductClick = async (product) => {
+    setSelectedProduct(product);
+
+    const viewed = JSON.parse(localStorage.getItem("viewedProducts") || "[]");
+
+    // 👁️ Only increment once per device
+    if (!viewed.includes(product._id)) {
+      try {
+        const res = await axios.put(`${API_BASE_URL}/api/products/${product._id}/view`);
+        const updatedProducts = products.map((p) =>
+          p._id === product._id ? { ...p, views: res.data.views } : p
+        );
+        setProducts(updatedProducts);
+        viewed.push(product._id);
+        localStorage.setItem("viewedProducts", JSON.stringify(viewed));
+      } catch (err) {
+        console.error("Failed to update view count", err);
+      }
+    }
+  };
+
+  const handleModalClose = () => setSelectedProduct(null);
+
+  // Split products into two sections
   const firstGridProducts = products?.slice(0, 8);
   const secondGridProducts = products?.length > 8 ? products?.slice(8) : [];
 
@@ -59,17 +87,10 @@ const Bags = () => {
             Discover timeless handbags, totes, and travel essentials crafted for
             style and durability.
           </motion.p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="mt-6 px-8 py-3 bg-gradient-to-r from-[#CDA434] to-yellow-400 text-black font-semibold rounded-lg shadow-lg hover:from-yellow-400 hover:to-[#CDA434] transition"
-          >
-            Shop Now
-          </motion.button>
         </div>
       </div>
 
-      {/* Top Product Grid */}
+      {/* First Product Grid */}
       <div className="max-w-7xl mx-auto p-6">
         <h2 className="text-2xl font-semibold text-[#CDA434] mb-6">
           Featured Products
@@ -89,7 +110,8 @@ const Bags = () => {
                 transition={{ duration: 0.3 }}
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.03 }}
-                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
+                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl relative cursor-pointer"
+                onClick={() => handleProductClick(item)}
               >
                 <ProductCard
                   title={item.name}
@@ -100,13 +122,18 @@ const Bags = () => {
                   size={item.size}
                   socialMedia={item.socialMedia}
                 />
+                {/* 👁️ View Count */}
+                <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 px-2 py-1 rounded-full text-xs">
+                  <EyeOutlined />
+                  <span>{item.views || 0}</span>
+                </div>
               </motion.div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Second Hero Banner */}
+      {/* Banner Section */}
       <div
         className="relative h-[500px] max-w-6xl mx-auto flex items-center justify-center bg-cover bg-center overflow-hidden my-12 rounded-xl"
         style={{ backgroundImage: `url(${bg_4})` }}
@@ -132,13 +159,6 @@ const Bags = () => {
             From daily use to special occasions, our collection blends luxury
             and practicality effortlessly.
           </motion.p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="mt-6 px-8 py-3 bg-gradient-to-r from-[#CDA434] to-yellow-400 text-black font-semibold rounded-lg shadow-lg hover:from-yellow-400 hover:to-[#CDA434] transition"
-          >
-            Explore Collection
-          </motion.button>
         </div>
       </div>
 
@@ -162,7 +182,8 @@ const Bags = () => {
                 transition={{ duration: 0.3 }}
                 viewport={{ once: true }}
                 whileHover={{ scale: 1.03 }}
-                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl"
+                className="hover:shadow-xl hover:shadow-yellow-600/30 transition rounded-xl relative cursor-pointer"
+                onClick={() => handleProductClick(item)}
               >
                 <ProductCard
                   title={item.name}
@@ -173,6 +194,11 @@ const Bags = () => {
                   size={item.size}
                   socialMedia={item.socialMedia}
                 />
+                {/* 👁️ View Count */}
+                <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 px-2 py-1 rounded-full text-xs">
+                  <EyeOutlined />
+                  <span>{item.views || 0}</span>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -182,6 +208,75 @@ const Bags = () => {
           </p>
         )}
       </div>
+
+      {/* 🧾 Product Modal */}
+      <Modal
+        open={!!selectedProduct}
+        onCancel={handleModalClose}
+        footer={null}
+        centered
+        width={750}
+        className="custom-dark-modal"
+      >
+        {selectedProduct && (
+          <div className="bg-[#202020] text-white rounded-xl overflow-hidden">
+            <div className="w-full h-80 flex justify-center items-center bg-[#1a1a1a]">
+              <img
+                src={selectedProduct.image}
+                alt={selectedProduct.name}
+                className="max-h-72 object-contain rounded-lg"
+              />
+            </div>
+
+            <div className="p-6 text-center space-y-3">
+              <h2 className="text-2xl font-bold text-[#CDA434] uppercase tracking-wide">
+                {selectedProduct.name}
+              </h2>
+
+              <Divider className="border-gray-700" />
+
+              <p className="text-gray-300 leading-relaxed">
+                {selectedProduct.description || "No description available."}
+              </p>
+
+              <div className="flex justify-center items-center gap-4 mt-4">
+                <p className="text-lg font-semibold text-white">
+                  ${selectedProduct.price}
+                </p>
+                {selectedProduct.oldPrice && (
+                  <p className="text-gray-500 line-through">
+                    ${selectedProduct.oldPrice}
+                  </p>
+                )}
+              </div>
+
+              {selectedProduct.size && (
+                <p className="text-sm text-gray-400">
+                  Size: {selectedProduct.size}
+                </p>
+              )}
+
+              <div className="flex justify-center items-center gap-2 mt-2 text-gray-400 text-sm">
+                <EyeOutlined />
+                <span>{selectedProduct.views || 0} Views</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Custom modal styles */}
+      <style jsx global>{`
+        .custom-dark-modal .ant-modal-content {
+          background-color: #202020 !important;
+          color: white !important;
+          border-radius: 1rem;
+          overflow: hidden;
+        }
+        .custom-dark-modal .ant-modal-close {
+          color: #fff !important;
+        }
+      `}</style>
     </div>
   );
 };
